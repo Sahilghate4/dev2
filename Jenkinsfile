@@ -3,29 +3,22 @@ pipeline {
 
     stages {
 
-        
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'pytest'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t flask-app .'
             }
         }
 
+        stage('Run Tests in Container') {
+            steps {
+                sh 'docker run flask-app pytest'
+            }
+        }
+
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 5000:5000 flask-app'
+                sh 'docker rm -f flask-container || true'
+                sh 'docker run -d -p 5000:5000 --name flask-container flask-app'
             }
         }
     }
